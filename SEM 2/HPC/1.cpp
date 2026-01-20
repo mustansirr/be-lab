@@ -7,7 +7,9 @@ graph for BFS and DFS .
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <chrono> // Include the chrono library for timing
 using namespace std;
+using namespace chrono; // Add namespace for chrono
 
 class DFS {
     public:
@@ -65,14 +67,31 @@ int main() {
     adj[3] = {1};                
     adj[4] = {2};                   
 
+    // Measure BFS runtime
+    auto start_bfs = high_resolution_clock::now();
     vector<int> res1 = c1.bfs(n, adj);
+    auto end_bfs = high_resolution_clock::now();
+    double bfs_time = duration<double>(end_bfs - start_bfs).count();
+
+    // Measure DFS runtime
+    auto start_dfs = high_resolution_clock::now();
     vector<int> res2 = c2.dfs(n, adj);
+    auto end_dfs = high_resolution_clock::now();
+    double dfs_time = duration<double>(end_dfs - start_dfs).count();
+
     cout << "BFS" << endl;
-    for(int node : res1)
+    for (int node : res1)
         cout << node << " ";
-        cout << '\n';
+    cout << '\n';
+
     cout << "DFS" << endl;
-    for(int node : res2)
+    for (int node : res2)
         cout << node << " ";
+    cout << '\n';
+
+    // Print the timings
+    cout << "BFS Runtime: " << bfs_time << " seconds" << endl;
+    cout << "DFS Runtime: " << dfs_time << " seconds" << endl;
+
     return 0;
 }

@@ -6,7 +6,9 @@ Parallel Breadth First Search and Depth First Search using OpenMP
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <chrono> // Include the chrono library for timing
 using namespace std;
+using namespace chrono; // Add namespace for chrono
 
 class DFS {
 public:
@@ -14,12 +16,11 @@ public:
         visited[node] = 1;
         res.push_back(node);
 
-        // Parallelize the recursive calls
         #pragma omp parallel for
         for (size_t i = 0; i < adj[node].size(); i++) {
             int neighbor = adj[node][i];
             if (!visited[neighbor]) {
-                #pragma omp task // Create a parallel task for each neighbor
+                #pragma omp task
                 recursiveDfs(neighbor, adj, visited, res);
             }
         }
@@ -33,7 +34,7 @@ public:
         // Start the parallel region
         #pragma omp parallel
         {
-            #pragma omp single // Ensure only one thread starts the DFS
+            #pragma omp single
             {
                 recursiveDfs(0, adj, visited, res);
             }
@@ -49,7 +50,6 @@ public:
         visited[0] = 1;
         vector<int> res;
 
-        // Use a queue for the current level and a temporary queue for the next level
         queue<int> q;
         q.push(0);
 
@@ -97,8 +97,17 @@ int main() {
     adj[3] = {1};
     adj[4] = {2};
 
+    // Measure BFS runtime
+    auto start_bfs = high_resolution_clock::now();
     vector<int> res1 = c1.bfs(n, adj);
+    auto end_bfs = high_resolution_clock::now();
+    double bfs_time = duration<double>(end_bfs - start_bfs).count();
+
+    // Measure DFS runtime
+    auto start_dfs = high_resolution_clock::now();
     vector<int> res2 = c2.dfs(n, adj);
+    auto end_dfs = high_resolution_clock::now();
+    double dfs_time = duration<double>(end_dfs - start_dfs).count();
 
     cout << "Parallel BFS" << endl;
     for (int node : res1)
@@ -108,5 +117,11 @@ int main() {
     cout << "Parallel DFS" << endl;
     for (int node : res2)
         cout << node << " ";
+    cout << '\n';
+
+    // Print the timings
+    cout << "Parallel BFS Runtime: " << bfs_time << " seconds" << endl;
+    cout << "Parallel DFS Runtime: " << dfs_time << " seconds" << endl;
+
     return 0;
 }
